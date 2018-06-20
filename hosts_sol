@@ -1,0 +1,61 @@
+[OSEv3:vars]
+
+###########################################################################
+### Ansible Vars
+###########################################################################
+timeout=60
+ansible_become=yes
+ansible_ssh_user=ec2-user
+deployment_type=
+containerized=false
+openshift_master_cluster_method=
+openshift_master_cluster_hostname=
+openshift_master_cluster_public_hostname=
+openshift_master_default_subdomain=
+
+# disable memory check, as we are not a production environment
+openshift_disable_check="memory_availability"
+
+[OSEv3:children]
+lb
+masters
+etcd
+nodes
+nfs
+
+[lb]
+loadbalancer1.df2f.internal host_zone=us-east-1a
+
+[masters]
+master1.df2f.internal host_zone=us-east-1a
+master2.df2f.internal host_zone=us-east-1a
+master3.df2f.internal host_zone=us-east-1a
+
+[etcd]
+master1.df2f.internal host_zone=us-east-1a
+master2.df2f.internal host_zone=us-east-1a
+master3.df2f.internal host_zone=us-east-1a
+
+[nodes]
+## These are the masters
+master1.df2f.internal openshift_hostname=master1.df2f.internal  openshift_node_labels="{'env': 'master', 'cluster': 'df2f', 'zone': 'us-east-1a'}"
+master2.df2f.internal openshift_hostname=master2.df2f.internal  openshift_node_labels="{'env': 'master', 'cluster': 'df2f', 'zone': 'us-east-1a'}"
+master3.df2f.internal openshift_hostname=master3.df2f.internal  openshift_node_labels="{'env': 'master', 'cluster': 'df2f', 'zone': 'us-east-1a'}"
+
+## These are infranodes
+infranode1.df2f.internal openshift_hostname=infranode1.df2f.internal  openshift_node_labels="{'env':'infra', 'cluster': 'df2f', 'zone': 'us-east-1a'}"
+infranode2.df2f.internal openshift_hostname=infranode2.df2f.internal  openshift_node_labels="{'env':'infra', 'cluster': 'df2f', 'zone': 'us-east-1a'}"
+
+## These are regular nodes
+node1.df2f.internal openshift_hostname=node1.df2f.internal  openshift_node_labels="{'env':'app', 'cluster': 'df2f', 'zone': 'us-east-1a'}"
+node2.df2f.internal openshift_hostname=node2.df2f.internal  openshift_node_labels="{'env':'app', 'cluster': 'df2f', 'zone': 'us-east-1a'}"
+node3.df2f.internal openshift_hostname=node3.df2f.internal  openshift_node_labels="{'env':'app', 'cluster': 'df2f', 'zone': 'us-east-1a'}"
+
+## These are CNS nodes
+# support1.df2f.internal openshift_hostname=support1.df2f.internal  openshift_node_labels="{'env':'glusterfs', 'cluster': 'df2f', 'zone': 'us-east-1a'}"
+# support2.df2f.internal openshift_hostname=support2.df2f.internal  openshift_node_labels="{'env':'glusterfs', 'cluster': 'df2f', 'zone': 'us-east-1a'}"
+# support3.df2f.internal openshift_hostname=support3.df2f.internal  openshift_node_labels="{'env':'glusterfs', 'cluster': 'df2f', 'zone': 'us-east-1a'}"
+
+[nfs]
+support1.df2f.internal openshift_hostname=support1.df2f.internal
+

@@ -1,0 +1,144 @@
+[OSEv3:vars]
+
+###########################################################################
+### Ansible Vars
+###########################################################################
+timeout=60
+ansible_become=yes
+ansible_ssh_user=ec2-user
+
+# disable memory check, as we are not a production environment
+openshift_disable_check="memory_availability"
+
+# Set this line to enable NFS
+openshift_enable_unsupported_configurations=True
+
+###########################################################################
+#### OpenShift Master Vars
+############################################################################
+#
+openshift_master_api_port=443  
+openshift_master_console_port=443
+#
+openshift_master_cluster_method=native 
+openshift_master_cluster_hostname=loadbalancer1.df2f.internal 
+openshift_master_cluster_public_hostname=loadbalancer.df2f.example.opentlc.com 
+openshift_master_default_subdomain=apps.df2f.example.opentlc.com 
+deployment_type=openshift-enterprise 
+
+
+###########################################################################
+#### OpenShift Router and Registry Vars
+############################################################################
+#
+openshift_hosted_router_selector='env=infra' 
+openshift_hosted_router_replicas=2 
+#
+openshift_hosted_registry_selector='env=infra' 
+openshift_hosted_registry_replicas=1 
+#
+openshift_hosted_registry_storage_kind=nfs 
+openshift_hosted_registry_storage_access_modes=['ReadWriteMany']
+openshift_hosted_registry_storage_nfs_directory=/srv/nfs
+openshift_hosted_registry_storage_nfs_options='*(rw,root_squash)'
+openshift_hosted_registry_storage_volume_name=registry
+openshift_hosted_registry_storage_volume_size=20Gi
+
+###########################################################################
+#### OpenShift Service Catalog Vars
+############################################################################
+#
+openshift_enable_service_catalog=true 
+template_service_broker_install=true 
+openshift_template_service_broker_namespaces=['openshift'] 
+ansible_service_broker_install=false 
+#
+
+
+###########################################################################
+### OpenShift Hosts
+###########################################################################
+[OSEv3:children]
+lb
+masters
+etcd
+nodes
+nfs
+#glusterfs
+
+[lb]
+loadbalancer1.df2f.internal
+
+[masters]
+master1.df2f.internal
+master2.df2f.internal
+master3.df2f.internal
+
+[etcd]
+master1.df2f.internal
+master2.df2f.internal
+master3.df2f.internal
+
+[nodes]
+## These are the masters
+master1.df2f.internal openshift_hostname=master1.df2f.internal  openshift_node_labels="{'env': 'master', 'cluster': 'df2f'}"
+master2.df2f.internal openshift_hostname=master2.df2f.internal  openshift_node_labels="{'env': 'master', 'cluster': 'df2f'}"
+master3.df2f.internal openshift_hostname=master3.df2f.internal  openshift_node_labels="{'env': 'master', 'cluster': 'df2f'}"
+
+## These are infranodes
+infranode1.df2f.internal openshift_hostname=infranode1.df2f.internal  openshift_node_labels="{'env':'infra', 'cluster': 'df2f'}"
+infranode2.df2f.internal openshift_hostname=infranode2.df2f.internal  openshift_node_labels="{'env':'infra', 'cluster': 'df2f'}"
+
+## These are regular nodes
+node1.df2f.internal openshift_hostname=node1.df2f.internal  openshift_node_labels="{'env':'app', 'cluster': 'df2f'}"
+node2.df2f.internal openshift_hostname=node2.df2f.internal  openshift_node_labels="{'env':'app', 'cluster': 'df2f'}"
+node3.df2f.internal openshift_hostname=node3.df2f.internal  openshift_node_labels="{'env':'app', 'cluster': 'df2f'}"
+
+## These are CNS nodes
+# support1.df2f.internal openshift_hostname=support1.df2f.internal  openshift_node_labels="{'env':'glusterfs', 'cluster': 'df2f'}"
+# support2.df2f.internal openshift_hostname=support2.df2f.internal  openshift_node_labels="{'env':'glusterfs', 'cluster': 'df2f'}"
+# support3.df2f.internal openshift_hostname=support3.df2f.internal  openshift_node_labels="{'env':'glusterfs', 'cluster': 'df2f'}"
+
+[nfs]
+support1.df2f.internal openshift_hostname=support1.df2f.internal
+
+#[glusterfs]
+# support1.df2f.internal glusterfs_devices='[ "/dev/xvdd" ]'
+# support2.df2f.internal glusterfs_devices='[ "/dev/xvdd" ]'
+# support3.df2f.internal glusterfs_devices='[ "/dev/xvdd" ]'
+#
+#
+#
+## Add Prometheus Metrics:
+#openshift_hosted_prometheus_deploy=true 
+#openshift_prometheus_node_selector={"env":"infra"}
+#openshift_prometheus_namespace=openshift-metrics 
+#
+## Prometheus
+#
+#openshift_prometheus_storage_kind=nfs
+#openshift_prometheus_storage_access_modes=['ReadWriteOnce']
+#openshift_prometheus_storage_nfs_directory=/srv/nfs
+#openshift_prometheus_storage_nfs_options='*(rw,root_squash)'
+#openshift_prometheus_storage_volume_name=prometheus
+#openshift_prometheus_storage_volume_size=10Gi
+#openshift_prometheus_storage_labels={'storage': 'prometheus'}
+#openshift_prometheus_storage_type='pvc'
+## For prometheus-alertmanager
+#openshift_prometheus_alertmanager_storage_kind=nfs
+#openshift_prometheus_alertmanager_storage_access_modes=['ReadWriteOnce']
+#openshift_prometheus_alertmanager_storage_nfs_directory=/srv/nfs
+#openshift_prometheus_alertmanager_storage_nfs_options='*(rw,root_squash)'
+#openshift_prometheus_alertmanager_storage_volume_name=prometheus-alertmanager
+#openshift_prometheus_alertmanager_storage_volume_size=10Gi
+#openshift_prometheus_alertmanager_storage_labels={'storage': 'prometheus-alertmanager'}
+#openshift_prometheus_alertmanager_storage_type='pvc'
+## For prometheus-alertbuffer
+#openshift_prometheus_alertbuffer_storage_kind=nfs
+#openshift_prometheus_alertbuffer_storage_access_modes=['ReadWriteOnce']
+#openshift_prometheus_alertbuffer_storage_nfs_directory=/srv/nfs
+#openshift_prometheus_alertbuffer_storage_nfs_options='*(rw,root_squash)'
+#openshift_prometheus_alertbuffer_storage_volume_name=prometheus-alertbuffer
+#openshift_prometheus_alertbuffer_storage_volume_size=10Gi
+#openshift_prometheus_alertbuffer_storage_labels={'storage': 'prometheus-alertbuffer'}
+#openshift_prometheus_alertbuffer_storage_type='pvc'
